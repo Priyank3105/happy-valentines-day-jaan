@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For My Favorite Person</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Playfair+Display:italic,wght@0,700;1,700&display=swap');
+
+body{
+    background:#f4eae0;
+    background-image:radial-gradient(#dccbb3 0.5px,transparent 0.5px);
+    background-size:20px 20px;
+    font-family:'Caveat',cursive;
+    margin:0;
+    padding:20px;
+}
+
+.header{text-align:center;margin-bottom:40px;}
+h1{font-family:'Playfair Display',serif;color:#8b5e5e;font-size:3rem;}
+
+.scrapbook-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:30px;
+    max-width:900px;
+    margin:auto;
+}
+
+.sticker-card{
+    background:white;
+    padding:15px;
+    box-shadow:5px 5px 15px rgba(0,0,0,.1);
+    transform:rotate(var(--rotation));
+    cursor:pointer;
+    transition:.3s;
+}
+.sticker-card:hover{transform:scale(1.05) rotate(0deg);}
+.locked{filter:grayscale(1);cursor:not-allowed;}
+
+.photo-placeholder{
+    aspect-ratio:1/1;
+    background:#eee;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2rem;
+}
+
+.label{text-align:center;font-size:1.3rem;color:#5d4037;}
+
+.overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    z-index:100;
+    justify-content:center;
+    align-items:center;
+}
+
+.polaroid{
+    background:white;
+    padding:25px 25px 60px;
+    max-width:500px;
+    animation:fadeUp .6s ease;
+}
+
+@keyframes fadeUp{
+    from{transform:translateY(40px);opacity:0}
+}
+
+/* 🕯️ Candle glow */
+.candle{
+    box-shadow:0 0 30px 10px rgba(255,180,100,.6);
+    animation:flicker 1.5s infinite alternate;
+}
+@keyframes flicker{
+    from{box-shadow:0 0 20px rgba(255,180,100,.4);}
+    to{box-shadow:0 0 40px rgba(255,200,120,.8);}
+}
+
+.close-btn{
+    margin-top:20px;
+    text-align:center;
+    font-weight:bold;
+    color:#8b5e5e;
+    cursor:pointer;
+}
+
+/* ❤️ Floating hearts */
+.heart{
+    position:fixed;
+    font-size:1.5rem;
+    animation:floatUp 1.2s ease forwards;
+    pointer-events:none;
+}
+@keyframes floatUp{
+    to{transform:translateY(-80px);opacity:0;}
+}
+
+/* 📸 Gallery */
+.gallery{
+    display:none;
+    max-width:900px;
+    margin:auto;
+    text-align:center;
+}
+.gallery-track{
+    display:flex;
+    gap:20px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+}
+.gallery-track img{
+    width:260px;
+    scroll-snap-align:center;
+    background:white;
+    padding:10px;
+    box-shadow:5px 5px 15px rgba(0,0,0,.2);
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>Valentine's Week</h1>
+    <p>A little piece of my heart for every day.</p>
+</div>
+
+<div class="scrapbook-grid" id="grid"></div>
+
+<!-- MESSAGE -->
+<div class="overlay" id="messageOverlay">
+    <div class="polaroid">
+        <div id="popupEmoji" style="font-size:4rem;"></div>
+        <div id="popupMsg" style="font-size:1.7rem;"></div>
+        <div class="close-btn" onclick="closeAll()">Close</div>
+    </div>
+</div>
+
+<!-- LETTER -->
+<div class="overlay" id="letterOverlay">
+    <div class="polaroid candle">
+        <p>My love,</p>
+        <p>
+            Somehow you became my favorite feeling.
+            Every day with you feels like home,
+            and every smile of yours stays with me.
+        </p>
+        <p>
+            I don’t promise perfection,
+            but I promise honesty, effort,
+            and a love that never stops choosing you.
+        </p>
+        <p style="text-align:right;">Forever yours ❤️</p>
+        <div class="close-btn" onclick="openGallery()">Continue 💞</div>
+    </div>
+</div>
+
+<!-- GALLERY -->
+<div class="gallery" id="gallery">
+    <h1>Us, Always 💖</h1>
+    <p>Swipe or tap a memory ✨</p>
+
+    <div class="gallery-track">
+        <img src="img1.jpg" onclick="memory(event,'This moment still makes my heart race 💕')">
+        <img src="img2.jpg" onclick="memory(event,'Every laugh with you is my favorite sound 🥹')">
+        <img src="img3.jpg" onclick="memory(event,'I’d relive this day forever 💞')">
+        <img src="img4.jpg" onclick="memory(event,'Still my safest place 🤍')">
+    </div>
+</div>
+
+<script>
+const weekData=[
+{date:7,name:"Rose Day",emoji:"🌹",msg:"If love had a smell, it would be roses—and if love had a face, it would be yours 🌹."},
+ {date:8,name:"Propose Day",emoji:"💍",msg:"I don’t promise perfection, but I promise effort, loyalty, and love. Will you walk this journey with me?\n -> Through distance, days, and everything in between—I want you always.\n-> Even if this proposal is through a screen, my feelings are real, deep, and meant only for you."},
+ {date:9,name:"Chocolate Day",emoji:"🍫",msg:"Warning: too much chocolate and too much of you are both addictive 😌🍫."},
+ {date:10,name:"Teddy Day",emoji:"🧸",msg:"Sending you a teddy online, because distance can’t stop me from loving you.\nUntil I can hold you myself, let this little teddy remind you how special you are to me🧸❤️."},
+ {date:11,name:"Promise Day",emoji:"🤝",msg:"I promise to choose you not only when its easy but also when its hard and truly matters.\n-> I promise to grow with you not away from you. \n-> I promise to respect your feelings even when I don’t fully understand them yet.\n-> I promise to make you feel loved, valued, and safe.\n-> These aren’t just words for today—they’re promises I want to live by. Happy Promise Day "},
+ {date:12,name:"Hug Day",emoji:"🫂",msg:"Imagine my arms around you, holding you just the way you like.\n-> If I were there, I’d hug you and never let go.\n-> One hug from you, meant to make everything feel a little lighter🤗.\n-> Until I can hold you for real, let this hug remind you how much you mean to me."},
+ {date:13,name:"Kiss Day",emoji:"💋",msg:"A kiss worth a thousand words."},
+ {date:14,name:"Valentine’s Day",emoji:"💝",msg:"LETTER"}
+
+];
+
+const grid=document.getElementById("grid");
+const today=new Date();
+
+weekData.forEach(day=>{
+ const card=document.createElement("div");
+ card.className="sticker-card";
+ card.style.setProperty("--rotation",(Math.random()*10-5)+"deg");
+ const locked=today.getMonth()<1||(today.getMonth()==1&&today.getDate()<day.date);
+ if(locked)card.classList.add("locked");
+
+ card.innerHTML=`<div class="photo-placeholder">${locked?"🔒":day.emoji}</div>
+ <div class="label">Feb ${day.date}: ${day.name}</div>`;
+
+ card.onclick=()=>{
+  if(locked)alert("Not yet 💌");
+  else if(day.msg==="LETTER")letterOverlay.style.display="flex";
+  else{
+   popupEmoji.innerText=day.emoji;
+   popupMsg.innerText=day.msg;
+   messageOverlay.style.display="flex";
+  }
+ };
+ grid.appendChild(card);
+});
+
+function closeAll(){
+ document.querySelectorAll(".overlay").forEach(o=>o.style.display="none");
+}
+
+function openGallery(){
+ closeAll();
+ grid.style.display="none";
+ document.querySelector(".header").style.display="none";
+ gallery.style.display="block";
+}
+
+function memory(e,text){
+ popupEmoji.innerText="💖";
+ popupMsg.innerText=text;
+ messageOverlay.style.display="flex";
+
+ const heart=document.createElement("div");
+ heart.className="heart";
+ heart.innerText="❤️";
+ heart.style.left=e.clientX+"px";
+ heart.style.top=e.clientY+"px";
+ document.body.appendChild(heart);
+ setTimeout(()=>heart.remove(),1200);
+}
+</script>
+
+</body>
+</html>
